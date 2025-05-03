@@ -67,8 +67,8 @@ class DataAnalysis:
                 RPSRxxQx.txt
                 THERxxQx.txt
         """
-        files = (''.join(files)) # Using tuples here is probably overkill haha.
-        required_files = tuple(FAERDataFiles.__members__.keys())
+        files = ''.join(files)
+        required_files = FAERDataFiles.__members__.keys()
         for i in required_files:
             if i not in files:
                 raise Exception (f"Missing file {i}xxQx.txt")
@@ -83,12 +83,13 @@ class DataAnalysis:
         self.__check_filenames (f)
         self._faer_files = f
 
-    def __load_dataframes (self): 
+    def __load_dataframes (self) -> tuple:
         """
             Load the data frame files dynamically into a list, return tuple.
         """
         dataframes = []
-        for i in tuple(FAERDataFiles.__members__.keys()):
+        files = FAERDataFiles.__members__.keys()
+        for i in files:
             path = self.faer_files[FAERDataFiles[i].value]
             dataframes.append(
                 pd.read_csv(
@@ -138,24 +139,17 @@ class DataAnalysis:
         # This dataframe or 'df' object is what I want, no more boilerplate nonsense!
         df = merged_dataframes[['primaryid', 'caseid', 'drugname', 'drug_rec_act']]
 
-        # In theory, del 'can' trigger the garbage collecter...
-        # The point is, I don't want it in the scope anymore.
-        del dataframes; del merged_dataframes
-
         # Here, values are appended to drug reports for the respective quarter
         for key in drug_reports.keys():
             drug_reports[key][0] += df[df['drugname'] == key].shape[0]
-
-    def __exit__ (self):
-        return
-
 
 def build_df (drug_map, dirpath):
     """
         A nice little function that builds pandas dataframes.
     """
     for q in dirpath:
-        # Using q instead of i because it's qt.
+        # Using q instead of i because it's qt... 
+        # We are iterating through FAERS quarters.
         DataAnalysis(q, drug_map)
 
     highest_budget = []
@@ -199,7 +193,8 @@ def main():
         generic_counterparts = {
             # "DRUG NAME": FAER FDA Reports, advertising budget
 
-            # generics are given the same price as their brand-name counterparrs
+            # generics are given the same price as their brand-name counterparts
+            # because it mains consistency in categorization
             "RISANKIZUMAB-RZAA":[0, 376.7],
             "UPADACITINIB":     [0, 337.8],
             "DUPILUMAB":        [0, 276.0],
